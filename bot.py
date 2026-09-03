@@ -60,7 +60,7 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN")
 ADMIN_IDS = [7485181331, 8944961221]
 SUPPORT_ADMIN_ID = 8944961221
 
-UPI_ID = "mdsaifu4u-2@oksbi"
+UPI_ID = "saifbhai@fam"
 PRICE_PER_JSON = 20
 ITEM_NAME = "Meesho Fresh Account (₹180 FLAT OFF)"
 
