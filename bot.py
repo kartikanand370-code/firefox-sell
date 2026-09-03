@@ -27,7 +27,7 @@ app = Flask("")
 
 @app.route("/")
 def home():
-    return "Meesho JSON Store Bot is Running!"
+    return "Meesho JSON Store Bot is Active & Running 24/7!"
 
 
 def run_flask():
@@ -55,9 +55,7 @@ def start_keep_alive():
 
 
 # ==================== CONFIGURATION ====================
-BOT_TOKEN = os.environ.get(
-    "BOT_TOKEN", "8903481741:AAGONzT--I71JRms_78U83mwq4TD74TRDUc"
-)
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
 ADMIN_IDS = [7485181331, 8944961221]
 SUPPORT_ADMIN_ID = 8944961221
@@ -177,12 +175,11 @@ async def user_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = query.from_user.id
 
     if query.data == "contact_support":
-        # Support info message
         await query.message.reply_text(
             f"💬 **Support Admin Details:**\n"
             f"━━━━━━━━━━━━━━━━━━━━\n"
             f"👤 Admin ID: `{SUPPORT_ADMIN_ID}`\n"
-            f"Agar aapko koi query ya problem ho, toh aap direct support contact kar sakte hain:\n"
+            f"Kisi bhi query ya problem ke liye link par click karein:\n"
             f"👉 [Click Here to Chat with Support](tg://openmessage?user_id={SUPPORT_ADMIN_ID})",
             parse_mode="Markdown",
         )
@@ -428,6 +425,7 @@ async def handle_incoming_messages(
 
     order = USER_ORDERS[user_id]
 
+    # Quantity Entered -> Dynamic QR Generation
     if order.get("step") == "WAITING_QTY":
         if not text.isdigit() or int(text) <= 0:
             await update.message.reply_text(
@@ -448,23 +446,28 @@ async def handle_incoming_messages(
         order["amount"] = total_amount
         order["step"] = "WAITING_PAYMENT"
 
-        pay_msg = (
-            f"🧾 **INVOICE / PAYMENT DETAILS**\n"
+        # Dynamic UPI QR Code URL Generation
+        qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=upi://pay?pa={UPI_ID}%26pn=MeeshoStore%26am={total_amount}"
+
+        pay_caption = (
+            f"🧾 **ORDER INVOICE**\n"
             f"━━━━━━━━━━━━━━━━━━━━\n"
             f"🛍️ **Item:** `{ITEM_NAME}`\n"
             f"🔢 **Quantity:** `{qty}`\n"
-            f"💵 **Total Payable:** `₹{total_amount}`\n"
+            f"💵 **Total Amount:** `₹{total_amount}`\n"
             f"━━━━━━━━━━━━━━━━━━━━\n"
-            f"📲 **UPI Payment Details:**\n"
-            f"UPI ID: `{UPI_ID}` *(Tap to Copy)*\n\n"
+            f"📲 **Scan QR to Pay ₹{total_amount}**\n\n"
+            f"🔗 **UPI ID:** `{UPI_ID}` *(Tap to copy)*\n\n"
             f"⚠️ **Payment Steps:**\n"
-            f"1. Kisi bhi UPI App (PhonePe / GPay / Paytm) me UPI ID paste karein.\n"
-            f"2. Exact **₹{total_amount}** transfer karein.\n"
-            f"3. Pay karne ke baad yahan **Screenshot** ya **12-digit UTR** submit karein."
+            f"1. Is QR code ko kisi bhi app (PhonePe/GPay/Paytm) se scan karein.\n"
+            f"2. Pay karne ke baad **12-digit UTR** ya **Screenshot** yahan bhej dein."
         )
 
-        await update.message.reply_text(pay_msg, parse_mode="Markdown")
+        await update.message.reply_photo(
+            photo=qr_url, caption=pay_caption, parse_mode="Markdown"
+        )
 
+    # Verification / Proof Received
     elif order.get("step") == "WAITING_PAYMENT":
         order["step"] = "UNDER_VERIFICATION"
         await update.message.reply_text(
@@ -615,6 +618,10 @@ async def process_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     start_keep_alive()
+
+    if not BOT_TOKEN:
+        print("CRITICAL ERROR: BOT_TOKEN environment variable not set!")
+        return
 
     print("Bot initializing...")
     app_tg = Application.builder().token(BOT_TOKEN).build()
