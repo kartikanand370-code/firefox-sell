@@ -58,7 +58,7 @@ def start_keep_alive():
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
 ADMIN_IDS = [7485181331, 8944961221]
-SUPPORT_ADMIN_ID = 8944961221
+SUPPORT_ADMIN_ID = 1111111111
 
 UPI_ID = "mdsaifu4u-2@okaxis"
 PRICE_PER_JSON = 20
